@@ -1,0 +1,156 @@
+Section 1 - Shipwrecks dataset.  For the first three questions, you must write queries to answer the following questions about the shipwrecks stored in the sample_geospatial dataset. These are designed to be relatively straightforward queries in a simple dataset. You should only need to find the documents specified and transform/format them as requested. You may use either aggregation pipelines or find() to answer the first three questions. Your call.
+ 
+
+Question 1:  Write a query that determines the total number of wrecks located north of the Arctic Circle. You may need to do some research to determine how you would determine whether a wreck is located north of the Arctic Circle. That research is part of the question. Your query should not return details about the matching wrecks, just an integer value indicating how many of them the dataset contains.
+
+
+Question 2:  Some shipwrecks are more dangerous than others. Some warships, for example, may have sunk carrying explosives. Helpfully, those are marked in this dataset by having their "history" key set to the value "Loaded with explosives".  
+
+Write a query that retrieves the location of all wrecks "Loaded with explosives". Each document in your result set should include the id, chart, history, water level (watlev), depth, and coordinates of one such plane wreck. The documents returned by your query need to match the following sample document structure (remember that you cannot control the order of keys listed within a document!):
+
+{
+    "_id": ...,
+    "chart" : ...,
+    "depth" : ...,
+    "history" : ...,
+    "watlev": ...,
+    "coordinates" : [
+        ...,
+        ...
+    ]
+}
+ 
+
+Question 3:  Write a query that retrieves all shipwrecks that are categorized as "Wrecks - Visible" ("feature_type" field), with a water level description (watlev) of "covers and uncovers", at a latitude between 45.0 and 60.0 degrees (inclusive). In the northern hemisphere, latitude values increase from the equator, which is at 0.0 degrees latitude, to the north pole, which lies at 90.0 degrees latitude.
+
+Your query should return the list of wrecks as a set of documents with the following format. The source field name is provided in comments after the result set field name if the source field to use is not obvious.
+
+
+{
+    "_id" : ObjectId("..."),
+    "Wreck Coordinates" : [    // sample coordinates given, obviously they will vary from wreck to wreck
+        -151.346957,
+        60.516213
+    ],
+    "Wreck Status" : ...,  // map the "feature_type" field in the source data to this field name in the result set
+    "Water Level" : ...  // map the "watlev" field in the source data to this field name in the result set
+}
+ 
+
+Section 2 - Use the sample_airbnb dataset to answer the following questions. The sample_airbnb dataset is filled with data scraped from Airbnb's website (www.airbnb.comLinks to an external site.) for a handful of markets worldwide. This is a small sample of all Airbnb data. Review the Airbnb website as needed to understand the context for the data contained in this dataset.
+
+You need to create aggregation pipelines to answer the remaining questions in the lab -- db.collection.aggregate([...]). 
+
+This section focuses on creating more sophisticated aggregation pipelines and using additional operators beyond just the $match and $project stages required in the first group of questions.
+ 
+
+Question 4:   Write an aggregation pipeline that determines how many listings the database contains for rentals in the "Bondi Beach" suburb of the Sydney market ("address.market"), that have at least two bedrooms and include the amenities "Kitchen" and "Air conditioning". 
+ 
+Your query should be in the form of an aggregation pipeline that returns one document containing a single key named "Matches found".  The value of the "Matches found" key should be the total number of listings in this dataset that meet the specified criteria.
+
+     {
+        "Matches found" : ...
+     }
+ 
+
+Question 5:  Now write an aggregation pipeline that retrieves the three rentals in the "Bondi Beach" suburb of Sydney that have the highest nightly rental price. Your result set should be sorted from the most expensive listing down to the third most expensive one. Your results should only include the three most expensive rentals in the Bondi Beach suburb.
+
+Your query should return a set of three documents, each of which has the following structure:
+
+{
+   "Listing URL" : ...,
+   "Listing name" : ...,
+   "Nightly price" : ...,
+   "Suburb": ... // from the "address.suburb" field 
+   "Airbnb market": ..., // from the "address.market field
+}
+ 
+
+Question 6: Write an aggregation pipeline to calculate the number of listings, min, max, and average nightly rental price for each of the following Hawaiian markets ("address.market"): Oahu, Kauai, Maui, and "The Big Island".
+
+Your aggregation pipeline should calculate the total number of listings available in each of these markets, along with a nightly pricing summary. 
+
+Your result set should contain a set of documents with the following structure for each Hawaiian sub-market.  Order your results from the market with the most listings down to the market with the fewest listings.
+
+   { 
+     "Hawaiian Market": ...,
+     "Number Of Listings": ...,
+     "Lowest nightly listing price": ...,
+     "Average nightly listing price": ...,
+     "Highest nightly listing price": ...,
+   }
+ 
+
+Question 7: Let's switch from looking at vacation destinations to exploring how the Airbnb rental inventory in various cities matches the needs of digital nomads traveling on their own. 
+
+To do so, write an aggregation pipeline that finds the number of listings and the average nightly price for listings in each of these cities that meet the following criteria:
+
+Markets to include: New York, Istanbul, Barcelona, Hong Kong, Porto, Sydney
+One-bedroom listings only
+No roommates or sharing - room type needs to be "Entire home/apt"
+Amenities must include Wifi, Kitchen, and Coffee maker
+The overall review rating is 95 or higher  (review_scores.review_scores_rating)
+ 
+For each of these cities, calculate the following and return the results in a set of documents with the following structure:
+
+ {
+    "City" : ...,     // use address.market
+    "Number Of Listings" ...,
+    "Average nightly price" : ...
+ }
+Order the results of your query from the city with the fewest rentals meeting these criteria to the city with the most listings that meet these criteria. 
+
+ 
+
+Section 3 - Use the sample_mflix dataset to answer the remaining questions. The sample_mflix dataset appears to be built from information about films and theaters gathered from imdb.comLinks to an external site. and rottentomatoes.comLinks to an external site.. Feel free to use those sites for reference when exploring the document structure for the movies listed in sample_mflix.
+
+As with the previous section, all of your answers to questions in this section should be answered by creating an aggregation pipeline. This section emphasizes working with arrays and subdocuments.
+
+Question 8:  Write an aggregation pipeline that calculates the total number of theaters in each zipcode in the sample_mflix.theaters collection. Return a list of documents for all zip codes with more than five theaters. For each zip with more than five theaters, return a document with the following structure:
+
+  {
+     "Zip" : ...,
+     "TotalTheaters" : ...
+  }
+Sort your result set in numeric order downwards from the Zip with the most theaters to the Zip with the fewest (but still more than 5).
+
+ 
+
+Question 9:  Write a query that calculates the number of films released between 2003 and 2013 (inclusive) that were directed by each of the following people.
+
+Martin Scorsese
+Christopher Nolan
+Tim Burton
+Spike Lee
+Lucy Walker
+Peter Jackson
+Susanne Bier
+Sang-soo Hong
+Robert Rodriguez
+Use the field "year" to determine when each film was released.
+
+Each of the documents returned in your result set should have the following structure:
+
+      {
+         "Director" : ...,
+         "TotalFilmsDirected" : ...
+      }
+Order your result set from the director who released the most movies during that period down to the director who released the fewest.
+
+ 
+
+Question 10:  Write an aggregation pipeline that returns the names of all actors who appeared in more than ten Comedy films released between 2008 and 2016 (inclusive).  A movie is classified as a Comedy in the sample_mflix movies dataset if the value "Comedy" appears in its list of genres. Use the field "year" to determine the year a film was released.
+
+For each actor who meets these criteria, your query should return the actor's name, the total number of Comedy films they appeared in during that time, and the average IMDb rating of those films.
+
+Order your results according to the average IMDb rating for each actor's comedy films, highest to lowest.
+
+Your result set should include documents with the following structure:
+
+  {
+      "Actor" : ...
+      "NumberOfComediesReleased": ...,
+      "AverageIMDBRating" : ...,
+  }
+Remember that you cannot control the order in which key:value pairs are displayed within a JSON document.
+ 
